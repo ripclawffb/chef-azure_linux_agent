@@ -1,0 +1,1 @@
+default['azrdo']['org_url'] = 'https://dev.azure.com/ripclawffb'
