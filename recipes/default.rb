@@ -4,10 +4,12 @@
 #
 # Copyright:: 2020, The Authors, All Rights Reserved.
 
+# add gpg key for nodejs yum repo
 cookbook_file '/etc/pki/rpm-gpg/NODESOURCE-GPG-SIGNING-KEY-EL' do
   source 'NODESOURCE-GPG-SIGNING-KEY-EL'
 end
 
+# add nodejs yum repo
 yum_repository 'Node.js for Enterprise Linux 7 - $basearch - Source' do
   name 'nodesource'
   baseurl 'https://rpm.nodesource.com/pub_10.x/el/7/$basearch'
@@ -53,7 +55,7 @@ end
 # install pyenv under user context
 pyenv_user_install node['azrdo']['user']
 
-# install various python versions
+# install various python versions using pyenv
 node['azrdo']['python_versions'].each do |python_version|
   pyenv_python python_version do
     user node['azrdo']['user']
@@ -75,6 +77,7 @@ node['azrdo']['python_versions'].each do |python_version|
   end
 end
 
+# extract agent install files
 tar_extract node['azrdo']['ext_source'] do
   user node['azrdo']['user']
   group node['azrdo']['user']
@@ -100,7 +103,7 @@ bash 'configure azrdo agent' do
   group node['azrdo']['user']
   cwd node['azrdo']['install_dir']
   code <<-EOH
-    ./config.sh --unattended --url '#{node['azrdo']['org_url']}' --auth path --token '#{default['azrdo']['token']}' --acceptTeeEula --pool '#{node['azrdo']['pool']}' --replace
+    ./config.sh --unattended --url '#{node['azrdo']['org_url']}' --auth path --token '#{node['azrdo']['token']}' --acceptTeeEula --pool '#{node['azrdo']['pool']}' --replace
   EOH
   action :nothing
   notifies :run, "bash[install azrdo agent as a service]", :immediate
@@ -115,6 +118,7 @@ bash 'install azrdo agent as a service' do
   action :nothing
 end
 
+# create symbolic link to non-packaged git
 link "/bin/git" do
   to "/usr/local/bin/git"
 end
